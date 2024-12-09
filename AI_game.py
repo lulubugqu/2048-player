@@ -15,7 +15,7 @@ from _2048.manager import GameManager
 from AI_Minimax import maximize
 from AI_MonteCarloTreeSearch import monte_carlo_tree_search
 import sys
-
+import time
 # events using pygame key
 EVENTS = [
     pygame.event.Event(pygame.KEYDOWN, {'key': pygame.K_UP}),    # UP
@@ -69,11 +69,11 @@ def run_game(game_class=Game2048, title='2048!', data_dir='save', algorithm="min
             writer.writerow(["Run", "Total Moves", "Final Score", "Highest Tile"])  # Header
 
     def reset_game():
-        
         return GameManager(Game2048, screen,
                            os.path.join(data_dir, '2048.score'),
                            os.path.join(data_dir, '2048.%d.state'))
 
+    
     manager = reset_game()
 
     # speed up animation
@@ -83,6 +83,7 @@ def run_game(game_class=Game2048, title='2048!', data_dir='save', algorithm="min
     run_count = 1
     while True:  # loop for restarting the game after it ends
         tick = 0
+        start = time.time()
         total_moves = 0
         running = True
 
@@ -100,6 +101,9 @@ def run_game(game_class=Game2048, title='2048!', data_dir='save', algorithm="min
                     best_move, _ = monte_carlo_tree_search(old_grid)
 
                 if best_move is None:
+                    stop = time.time()
+                    duration = stop - start
+                    print(f"duration: {duration}")
                     final_score = manager.game.score
                     highest_tile = np.max(manager.game.grid)
 

@@ -9,7 +9,7 @@ Modified to add functionality for evaluation and monte carlo tree search
 ## Code Base Description
 | File | Description |
 | --- | --- |
-| User_game | The traditional one-human-player 2048 game, takes in keyboard inpu.t |
+| User_game | The traditional one-human-player 2048 game, takes in keyboard input. |
 | AI_game | Run one-AI-player 2048 game. |
 | AI_Move | Basic tile move/merge logic based on 2048 rules. |
 | AI_Minimax | Minimax algorithm for 2048 tree. Max is the AI playing the game, and Min is the computer which generates new 2 or 4 tile randomly. |

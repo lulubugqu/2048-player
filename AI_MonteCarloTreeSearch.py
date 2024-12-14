@@ -3,8 +3,8 @@ from copy import deepcopy
 import numpy as np
 from AI_Movement import move, free_cells
 
-SIMULATIONS = 50  # reduced number of simulations per move
-DEPTH = 2  # reduced simulation depth
+SIMULATIONS = 50 
+DEPTH = 2
 
 def simulate(grid):
     '''

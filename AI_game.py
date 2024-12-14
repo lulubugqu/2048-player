@@ -1,4 +1,5 @@
 from os import environ
+import tempfile
 environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 
 import os
@@ -13,6 +14,7 @@ import _2048
 from _2048.game import Game2048
 from _2048.manager import GameManager
 from AI_Minimax import maximize
+from AI_AlphaBeta import maximize_ab
 from AI_MonteCarloTreeSearch import monte_carlo_tree_search
 import sys
 import time
@@ -56,6 +58,7 @@ def run_game(game_class=Game2048, title='2048!', data_dir='save', algorithm="min
     pygame.display.set_caption(title)
     pygame.display.set_icon(game_class.icon(32))
     clock = pygame.time.Clock()
+    win_logged = False
 
     # directory to save game grid and max score
     os.makedirs(data_dir, exist_ok=True)
@@ -66,19 +69,26 @@ def run_game(game_class=Game2048, title='2048!', data_dir='save', algorithm="min
     if not os.path.exists(csv_file):
         with open(csv_file, mode='w', newline='') as file:
             writer = csv.writer(file)
-            writer.writerow(["Run", "Total Moves", "Final Score", "Highest Tile"])  # Header
+            writer.writerow(["Run", "Total Moves", "Final Score", "Highest Tile", "Running Time (s)"]) 
+    
+    # this will not keep histroy of max score
+    # def reset_game():
+    #     # temp directory for these save files cause it is necessary for game manager, not for us
+    #     temp_dir = tempfile.TemporaryDirectory()
+    #     dummy_score_file = os.path.join(temp_dir.name, 'dummy.score')
+    #     dummy_state_file = os.path.join(temp_dir.name, 'dummy.%d.state')  
+    #     return GameManager(Game2048, screen, dummy_score_file, dummy_state_file)
 
+    #  this will keep histroy of max score and every end game file
     def reset_game():
         return GameManager(Game2048, screen,
                            os.path.join(data_dir, '2048.score'),
                            os.path.join(data_dir, '2048.%d.state'))
-
-    
     manager = reset_game()
 
     # speed up animation
-    manager.game.ANIMATION_FRAMES = 3
-    manager.game.WIN_TILE = 99999
+    manager.game.ANIMATION_FRAMES = 5
+    manager.game.WIN_TILE = 2048
 
     run_count = 1
     while True:  # loop for restarting the game after it ends
@@ -97,29 +107,63 @@ def run_game(game_class=Game2048, title='2048!', data_dir='save', algorithm="min
                 # decide moves based on the selected algorithm
                 if algorithm == "minimax":
                     best_move, _ = maximize(old_grid)
+                    
+                    # for timing decision making
+                    # start_time_choice = time.time()
+                    # best_move, _ = maximize(old_grid)
+                    # end_time_choice = time.time()
+                    # elapsed_time_choice = end_time_choice - start_time_choice
+                    # print(f"Time taken to decide: {elapsed_time_choice:.2f} seconds")
+                elif algorithm == "ab":
+                    best_move, _ = maximize_ab(old_grid)
+                    # for timing decision making
+                    # start_time_choice = time.time()
+                    # best_move, _ = maximize_ab(old_grid)
+                    # end_time_choice = time.time()
+                    # elapsed_time_choice = end_time_choice - start_time_choice
+                    # print(f"Time taken to decide: {elapsed_time_choice:.2f} seconds")
                 elif algorithm == "mcts":
                     best_move, _ = monte_carlo_tree_search(old_grid)
 
+                # if no more moves, restart
                 if best_move is None:
                     stop = time.time()
                     duration = stop - start
-                    print(f"duration: {duration}")
                     final_score = manager.game.score
                     highest_tile = np.max(manager.game.grid)
 
                     with open(csv_file, mode='a', newline='') as file:
                         writer = csv.writer(file)
-                        writer.writerow([run_count, total_moves, final_score, highest_tile])
+                        writer.writerow([run_count, total_moves, final_score, highest_tile, round(duration, 2)])
 
-                    print(f"Game Over! Run: {run_count}, Total Moves: {total_moves}, Final Score: {final_score}, Highest Tile: {highest_tile}")
+                    print(f"Game Over! Run: {run_count}, Total Moves: {total_moves}, Final Score: {final_score}, Highest Tile: {highest_tile}, Duration: {round(duration, 2)}")
 
                     run_count += 1
                     manager = reset_game()  # reset game
                     break
 
                 total_moves += 1
+                # print(f"total_moves: {total_moves}")
                 e = EVENTS[best_move]
                 manager.dispatch(e)
+                # for debugging: print the board
+                # pprint(manager.game.grid, width=30)
+                # print(manager.game.score)
+                
+                # if win game, log and restart
+                if not win_logged and np.max(manager.game.grid) >= manager.game.WIN_TILE:
+                    stop = time.time()
+                    duration = stop - start
+                    final_score = manager.game.score
+                    highest_tile = np.max(manager.game.grid)
+
+                    with open(csv_file, mode='a', newline='') as file:
+                        writer = csv.writer(file)
+                        writer.writerow([run_count, total_moves, final_score, highest_tile, round(duration, 2), "Win!!!!!!!!"])
+
+                    print(f"Game Won! Run: {run_count}, Total Moves: {total_moves}, Final Score: {final_score}, Highest Tile: {highest_tile}, Duration: {round(duration, 2)}")
+                    
+                    win_logged = True
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -136,8 +180,11 @@ if __name__ == "__main__":
     try:
         gameType = sys.argv[1]
         if gameType == "-m":
-            print("Run with Minimax and Alpha-Beta Pruning")
+            print("Run with Minimax")
             run_game(algorithm="minimax")
+        elif gameType == "-ab":
+            print("Run with Minimax and Alpha-Beta Pruning")
+            run_game(algorithm="ab")
         elif gameType == "-mc":
             print("Run with Monte Carlo Tree Search")
             run_game(algorithm="mcts")

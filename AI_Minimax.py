@@ -2,22 +2,20 @@ from copy import deepcopy
 import numpy as np, math
 from AI_Movement import free_cells, move
 from AI_Heuristics import heuristics
+# Important H
 
+    # Smoothness (adjacent tiles should have similar values)
+    # Monotonicity (values should increase/decrease in rows or columns)
+    # Maximizing high-value tiles in corners
+    # Minimizing empty spaces
 DEPTH = 4
 
 def check_same(old_grid, new_grid):
-    for i in range(len(old_grid)):
-        for j in range(len(old_grid[i])):
-            if old_grid[i][j] != new_grid[i][j]:
-                return False
-    return True
+    return np.array_equal(old_grid, new_grid)
 
 def maximize(grid, depth=0):
     '''
     Maximize function for the max (AI) of the MiniMax Algorithm
-    If you want to change the depth of the search tree, try to 
-    implement some conditions for the "early stopping" at minimize
-    or set up your own limit constant.
     '''
 
     empty_cells = free_cells(grid)
@@ -33,7 +31,7 @@ def maximize(grid, depth=0):
         new_grid = deepcopy(grid)
         move(new_grid, i)
         if check_same(grid, new_grid):
-            pass
+            continue
         else:
             sum_score = minimize(new_grid, depth+1)
             if sum_score > best_score:
@@ -45,9 +43,9 @@ def maximize(grid, depth=0):
 def minimize(grid, depth=0):
     '''
     Minimize function for the min (Computer) of the Minimax Algorithm
-    Computer put new 2 tile (with 90% probability) or 
-    4 tile (with 10% probability) at one of empty spaces
     '''
+    # Computer will places a new 2 tile (with 90% probability) or 
+    # 4 tile (with 10% probability) at one of empty spaces
     empty_cells = free_cells(grid)
     num_empty = len(empty_cells)
 
@@ -58,16 +56,18 @@ def minimize(grid, depth=0):
         _, new_score = maximize(grid, depth+1)
         return new_score
 
+    # pruning condiiton
     if num_empty >= 6 and depth >= 3:
         return heuristics(grid, num_empty)
 
     sum_score = 0
 
-    for c, r in empty_cells:
-        for v in [2, 4]:
-            new_grid = deepcopy(grid)
+    for c, r in empty_cells: # for each empty cell
+        for v in [2, 4]:  # for each possible value 
+            new_grid = deepcopy(grid) 
             new_grid[c][r] = v
-
+            
+            # eval outcome of the placement with maximize()
             _, new_score = maximize(new_grid, depth+1)
 
             if v == 2:

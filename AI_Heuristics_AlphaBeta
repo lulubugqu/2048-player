@@ -1,0 +1,148 @@
+import numpy as np, math
+from copy import deepcopy
+
+
+pattern = [[0, 0, 1, 2],
+           [0, 1, 2, 4],
+           [1, 2, 4, 8],
+           [2, 4, 8, 16]]
+
+corner = [[0.0, 0.0, 0.1, 0.1],
+          [0.0, 0.1, 0.1, 0.3],
+          [0.1, 0.1, 0.3, 0.5],
+          [0.1, 0.3, 0.5, 1]]
+
+
+
+def pattern_score(grid):
+    '''
+    Calc weighted pattern score based on predefined weights.
+    '''
+    score = 0
+    for x in range(4):
+        for y in range(4):
+            score += grid[x][y] * pattern[x][y]
+    return score
+
+
+def largest_value_in_corner(grid):
+    '''
+    Bonus based on how close the largest tile is to the bottom-right corner.
+    '''
+    max_value = np.max(grid)
+    max_position = np.argwhere(grid == max_value)[0]  # Find position of the max tile
+    row, col = max_position
+
+    # Calculate a score inversely proportional to distance from bottom-right
+    corner_score = 1 / (1 + abs(3 - row) + abs(3 - col))
+    return corner_score * max_value
+
+
+def monotonicity_score(grid):
+    '''
+    Bonus to grid w increasing or decreasing values row wise and column wise.
+    '''
+    score = 0
+
+    # row wise
+    for row in grid:
+        increasing = all(row[i] <= row[i + 1] for i in range(len(row) - 1))
+        decreasing = all(row[i] >= row[i + 1] for i in range(len(row) - 1))
+        if increasing or decreasing:
+            score += sum(row)
+
+    # col wise
+    for col in grid.T:
+        increasing = all(col[i] <= col[i + 1] for i in range(len(col) - 1))
+        decreasing = all(col[i] >= col[i + 1] for i in range(len(col) - 1))
+        if increasing or decreasing:
+            score += sum(col)
+
+    return score
+
+
+def heuristics(grid, num_empty):
+    '''
+    Scores the grid for Minimax.
+    '''
+    PATTERN_WEIGHT = 0.5
+    SMOOTHNESS_WEIGHT = 0.7
+    FREE_CELLS_WEIGHT = 2.5
+    CORNER_WEIGHT = 2
+    MONOTONICITY_WEIGHT = 1.3
+    
+    grid = np.array(grid)
+
+	# apply weights
+    pattern_score_value = PATTERN_WEIGHT * pattern_score(grid)
+    smoothness_score_value = SMOOTHNESS_WEIGHT * smoothness_ab(grid)
+    free_cells_score_value = FREE_CELLS_WEIGHT * num_empty
+    # corner_score_value = CORNER_WEIGHT * largest_value_in_corner(grid)
+    monotonicity_score_value = MONOTONICITY_WEIGHT * monotonicity_score(grid)
+
+    total_score = (pattern_score_value +
+                   smoothness_score_value +
+                   free_cells_score_value +
+                #    corner_score_value +
+                   monotonicity_score_value)
+	
+    return total_score
+# =========================================================================================================
+
+def monotonicity_ab(grid):
+    """
+    Measures how monotonic the grid is. Higher monotonicity means the tiles are either consistently increasing 
+    or decreasing along rows and columns. This encourages a cascading structure.
+    """
+    score = 0
+
+    # Penalize breaking monotonicity in rows
+    for row in grid:
+        for i in range(len(row) - 1):
+            if row[i] > row[i + 1]:
+                score -= abs(row[i] - row[i + 1])
+
+    # Penalize breaking monotonicity in columns
+    for col in grid.T:
+        for i in range(len(col) - 1):
+            if col[i] > col[i + 1]:
+                score -= abs(col[i] - col[i + 1])
+
+    return score
+
+def smoothness_ab(grid):
+    """
+    Measures how smooth the grid is by penalizing large differences between adjacent tiles. This encourages merging.
+    """
+    score = 0
+
+    # Penalize large differences horizontally
+    for row in grid:
+        for i in range(len(row) - 1):
+            score -= abs(row[i] - row[i + 1])
+
+    # Penalize large differences vertically
+    for col in grid.T:
+        for i in range(len(col) - 1):
+            score -= abs(col[i] - col[i + 1])
+
+    return score
+
+def heuristics_ab(grid, num_empty):
+    """
+    Combines monotonicity, smoothness, and free tiles into a single heuristic function.
+    Adjust weights to fine-tune behavior.
+    """
+    MONOTONICITY_WEIGHT = 1.0
+    SMOOTHNESS_WEIGHT = 0.3
+    FREE_TILES_WEIGHT = 2.5
+    PATTERN_WEIGHT = 0.3 
+
+    grid = np.array(grid)
+    pattern_score_value = PATTERN_WEIGHT * pattern_score(grid)
+    monotonicity_score = MONOTONICITY_WEIGHT * monotonicity_ab(grid)
+    smoothness_score = SMOOTHNESS_WEIGHT * smoothness_ab(grid)
+    free_tiles_score = FREE_TILES_WEIGHT * num_empty
+
+    total_score =  monotonicity_score + smoothness_score + free_tiles_score
+    return total_score

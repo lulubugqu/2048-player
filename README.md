@@ -14,10 +14,10 @@ Used base code from https://github.com/Maanuj-Vora/2048-AI-Minimax. Modified to 
 pip install 2048
 ```
 ### Play
-Then, in the directory, run either command see the game in action with different algrithms, use 
-  -m for MiniMax
-  -ab for MiniMax with Alpha-Beta Pruning
-  -mc for Monte Carlo Tree Search
+Then, in the directory, run either command see the game in action with different algrithms, use specific arguments to run the autoplayer with different algorithms:
+  - -m for MiniMax
+  - -ab for MiniMax with Alpha-Beta Pruning
+  - -mc for Monte Carlo Tree Search
 ```
 python AI_game.py -m
 python AI_game.py -ab 

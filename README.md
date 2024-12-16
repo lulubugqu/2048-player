@@ -3,8 +3,30 @@ Automated player for the 2048 game using Python and Pygames.
 
 ## Description
 
-Used base code from https://github.com/Maanuj-Vora/2048-AI-Minimax. 
-Modified to add functionality for evaluation and monte carlo tree search
+Used base code from https://github.com/Maanuj-Vora/2048-AI-Minimax. Modified to test different heuristics, add functionality for measuring evaluation metrics, implemented alpha-beta pruning monte carlo tree search algorithms.
+
+## How to run
+### Dependencies
+1. Python
+2. Pip
+3. This is built based on the 2048 pypi package made by user 'quantum'. If you don't have this package on your laptop, run this command in terminal for necessary dependencies.
+```
+pip install 2048
+```
+### Play
+Then, in the directory, run either command see the game in action with different algrithms, use 
+  -m for MiniMax
+  -ab for MiniMax with Alpha-Beta Pruning
+  -mc for Monte Carlo Tree Search
+```
+python AI_game.py -m
+python AI_game.py -ab 
+python AI_game.py -mc 
+```
+With this the GUI will pop up, and AI will start playing the game. It will restart when it loses and continue playing nonstop until it wins the game. 
+
+To explore different depth levels for MiniMax, that value can be modified from AI_Minimax and AI_AlphaBeta files.
+
 
 ## Code Base Description
 | File | Description |
@@ -18,16 +40,3 @@ Modified to add functionality for evaluation and monte carlo tree search
 | AI_MonteCarloTreeSearch | MCTS algorithm for 2048 tree. |
 
 
-## How to run
-This is built based on the 2048 pypi package made by user 'quantum'. If you don't have this package on your laptop, run this command in terminal for necessary dependencies.
-```
-pip install 2048
-```
-
-Then, in the directory, run to see the game in action with different algrithms, use -m for Minmax and -mc for Monte Carlo Tree Search.
-```
-python AI_game.py -m 
-
-python AI_game.py -mc 
-```
-The GUI will pop up, and AI will start playing the game. If it loses, it will just restart, playing nonstop until it wins the game. 

@@ -25,6 +25,7 @@ def heuristics(grid, num_empty):
                    free_cells_score_value +
                    corner_score_value +
                    monotonicity_score_value)
+
 	
     return total_score
 
@@ -38,9 +39,9 @@ def pattern_score(grid):
                [1, 3, 5, 15],
                [3, 5, 15, 30]]
     score = 0
-    for x in range(4):
-        for y in range(4):
-            score += grid[x][y] * pattern[x][y]
+    for col in range(4):
+        for row in range(4):
+            score += grid[col][row] * pattern[col][row]
     return score
 
 def smooth_score(grid):
@@ -49,36 +50,35 @@ def smooth_score(grid):
     '''
     score = 0
 
-    for c in range(4): # for all tiles
-        for r in range(4):
-            if grid[c][r] != 0:  # if not occupied
-                value = np.log2(grid[c][r])  # log space of the current cell value
+    for col in range(4): # for all tiles
+        for row in range(4):
+            # if not empty tile
+            if grid[col][row] != 0:  
+                # log of tile value for consistent scoring
+                value = np.log2(grid[col][row])  
 
                 # check right one and down one
                 for direction in [(1, 0), (0, 1)]:  # (dirCol, dirRow)
                     dirCol, dirRow = direction
-                    newCol, newRow = c + dirCol, r + dirRow
+                    newCol, newRow = col + dirCol, row + dirRow
 
-                    # find farthest occupied pos in this direction
+                    # find next occupied tile
                     while 0 <= newCol < 4 and 0 <= newRow < 4 and grid[newCol][newRow] == 0:
                         newCol, newRow = newCol + dirCol, newRow + dirRow
 
                     # if target cell is valid, calc smoothness
                     if 0 <= newCol < 4 and 0 <= newRow < 4 and grid[newCol][newRow] != 0:
                         target_value = np.log2(grid[newCol][newRow])
+                        # penalty for lack of smoothness
                         score -= abs(value - target_value)
-
+    # negative score = less smooth
     return score
 
 def largest_val_in_corner(grid):
     '''
     Bonus to grid w the largest tile is in the bottom-right corner.
     '''
-    corner = [[0.0, 0.0, 0.1, 0.1],
-             [0.0, 0.1, 0.1, 0.3],
-             [0.1, 0.1, 0.3, 0.5],
-             [0.1, 0.3, 0.5, 1]]
-    
+
     max_value = np.max(grid)
     return 1 if grid[3][3] == max_value else 0
 
@@ -91,18 +91,18 @@ def monotonicity_score(grid):
     mono_scores = [0, 0, 0, 0]  # up, down, left, right
 
     # vertical mono
-    for x in range(4): # for each tile
+    for col in range(4): # for each tile
         current = 0
         next = current + 1
         while next < 4:
             # ignore empty tiles
-            while next < 4 and grid[next][x] == 0:
+            while next < 4 and grid[next][col] == 0:
                 next += 1
             if next >= 4:
                 break
             
-            current_value = np.log2(grid[current][x]) if grid[current][x] != 0 else 0
-            next_value = np.log2(grid[next][x]) if grid[next][x] != 0 else 0
+            current_value = np.log2(grid[current][col]) if grid[current][col] != 0 else 0
+            next_value = np.log2(grid[next][col]) if grid[next][col] != 0 else 0
             
             # up
             if current_value > next_value:
@@ -115,18 +115,18 @@ def monotonicity_score(grid):
             next += 1
 
     # horizontal mono
-    for y in range(4):
+    for row in range(4):
         current = 0
         next = current + 1
         while next < 4:
             # ignore empty tiles
-            while next < 4 and grid[y][next] == 0:
+            while next < 4 and grid[row][next] == 0:
                 next += 1
             if next >= 4:
                 break
             
-            current_value = np.log2(grid[y][current]) if grid[y][current] != 0 else 0
-            next_value = np.log2(grid[y][next]) if grid[y][next] != 0 else 0
+            current_value = np.log2(grid[row][current]) if grid[row][current] != 0 else 0
+            next_value = np.log2(grid[row][next]) if grid[row][next] != 0 else 0
             
             # left
             if current_value > next_value:

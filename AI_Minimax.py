@@ -3,11 +3,11 @@ import numpy as np, math
 from AI_Movement import free_cells, move
 from AI_Heuristics import heuristics
 # Important H
-
-    # Smoothness (adjacent tiles should have similar values)
-    # Monotonicity (values should increase/decrease in rows or columns)
+    # Smoothness (adjacent tiles have small differences)
+    # Monotonicity (tile values should increase/decrease in rows or columns)
     # Maximizing high-value tiles in corners
-    # Minimizing empty spaces
+    # Maximize empty spaces
+
 DEPTH = 4
 
 def check_same(old_grid, new_grid):

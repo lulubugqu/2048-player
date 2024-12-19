@@ -15,24 +15,24 @@ def move(grid, action):
 
     actiond, sum = 0, 0
 
-    # For the [upper/bottom/left/right]most tile for each row/column
+    # for the [upper/bottom/left/right]most tile for each row/column
     for row, column in CELLS[action]:
         # for each movement from the cell on [below/above/right/left]
         for dr, dc in GET_DELTAS[action](row, column):
-            # If the current tile is blank:
+            # if the current tile is blank:
             if not grid[row][column] and grid[dr][dc]:
                 # move the tile to the new position.
                 grid[row][column], grid[dr][dc] = grid[dr][dc], 0
                 actiond += 1
 
-            # If there exists a tile:    
+            # if there exists a tile:    
             if grid[dr][dc]:
-                # If the tile can merge with the current tile:
+                # if the tile can merge with the current tile:
                 if grid[row][column] == grid[dr][dc]:
                     grid[row][column] *= 2
                     grid[dr][dc] = 0
                     sum += grid[row][column]
                     actiond += 1
-                # When hitting a tile we stop trying.
+                # when hitting a tile we stop trying.
                 break
     return grid, actiond, sum

@@ -1,41 +1,24 @@
 from copy import deepcopy
 import numpy as np, math
 from AI_Movement import free_cells, move
-# from AI_Heuristics import heuristics_ab
-from AI_Heuristics import heuristics
+from AI_Heuristics_AlphaBeta import heuristics_ab
     # # Important H
-    # Tile monotonicity (higher tiles near the edges or corners)
-    # Smoothness (adjacent tiles with small differences)
-    # Free cells count (to prioritize grids with more moves)
-    # Max tile placement (to avoid blocking higher values)
+    # Monotonicity (higher tiles near the edges or corners)
+    # Smoothness (adjacent tiles have small differences)
+    # Maximizing high-value tiles in corners
+    # Maximize empty spaces
 
-# DEPTH = 6
+DEPTH = 4
 
-def adaptive_depth(num_empty):
-    if num_empty >= 8:
-        return 5
-    elif num_empty >= 4:
-        return 4
-    else:
-        return 3
 
 def check_same(old_grid, new_grid):
-    if np.array_equal(old_grid, new_grid):
-         return True
-    return False
-    # for i in range(len(old_grid)):
-    #     for j in range(len(old_grid[i])):
-    #         if old_grid[i][j] != new_grid[i][j]:
-    #             return False
-    # return True
+    return np.array_equal(old_grid, new_grid)
 
 def maximize_ab(grid, depth=0, alpha=float('-inf'), beta=float('inf')):
     empty_cells = free_cells(grid)
     num_empty = len(empty_cells)
 
-    max_depth = adaptive_depth(num_empty) # calc depth depending on num_empty
-
-    if depth >= max_depth or num_empty == 0:
+    if depth >= DEPTH or num_empty == 0:
         return None, heuristics_ab(grid, num_empty)
 
     best_score = float('-inf')
@@ -64,9 +47,8 @@ def maximize_ab(grid, depth=0, alpha=float('-inf'), beta=float('inf')):
 def minimize_ab(grid, depth=0, alpha=float('-inf'), beta=float('inf')):
     empty_cells = free_cells(grid)
     num_empty = len(empty_cells)
-    max_depth = adaptive_depth(num_empty) # calc depth depending on num_empty
 
-    if depth >= max_depth or num_empty == 0:
+    if depth >= DEPTH or num_empty == 0:
         return None, heuristics_ab(grid, num_empty)
     
     # unneccesary because of ab prunign
@@ -79,9 +61,10 @@ def minimize_ab(grid, depth=0, alpha=float('-inf'), beta=float('inf')):
         child_scores = []
         for v in [2, 4]:
             original_value = grid[c][r]
-            grid[c][r] = v
-            _, child_score = maximize_ab(grid, depth + 1, alpha, beta)
-            grid[c][r] = original_value 
+            new_grid = deepcopy(grid) 
+            new_grid[c][r] = v
+            _, child_score = maximize_ab(new_grid, depth + 1, alpha, beta)
+            new_grid[c][r] = original_value 
             
             weight = (0.9 / num_empty) if v == 2 else (0.1 / num_empty)
             child_scores.append(child_score * weight)
@@ -93,3 +76,30 @@ def minimize_ab(grid, depth=0, alpha=float('-inf'), beta=float('inf')):
             break
 
     return None, best_score
+
+# # test grid
+# def initialize_test_grid():
+#     return np.array([
+#         [4, 16, 64, 4],
+#         [16, 8, 512, 8],
+#         [16, 8, 512, 8],
+#         [2, 64, 2, 1024]
+#     ])
+# def initialize_test_grid2():
+#     return np.array([
+#         [0, 0, 0, 8],
+#         [0, 0, 4, 16],
+#         [4, 4, 16, 64],
+#         [4, 16, 64, 128]
+#  ])
+
+# 
+# def run_tests():
+#     test_grid = initialize_test_grid2()
+#     ab_score = heuristics_ab(test_grid, 0)
+#     print(f"ab_score: {ab_score}")
+#     score = heuristics(test_grid, 0)
+#     print(f"score: {score}")
+
+# # run tests when function
+# run_tests()

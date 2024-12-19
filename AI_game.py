@@ -69,7 +69,7 @@ def run_game(game_class=Game2048, title='2048!', data_dir='save', algorithm="min
     if not os.path.exists(csv_file):
         with open(csv_file, mode='w', newline='') as file:
             writer = csv.writer(file)
-            writer.writerow(["Run", "Total Moves", "Final Score", "Highest Tile", "Running Time (s)"]) 
+            writer.writerow(["Run", "Total Moves", "Final Score", "Highest Tile", "Run Time(s)", "Decision Time(s)"]) 
     
     # this will not keep histroy of max score
     # def reset_game():
@@ -114,6 +114,9 @@ def run_game(game_class=Game2048, title='2048!', data_dir='save', algorithm="min
                     # end_time_choice = time.time()
                     # elapsed_time_choice = end_time_choice - start_time_choice
                     # print(f"Time taken to decide: {elapsed_time_choice:.2f} seconds")
+                    # with open(csv_file, mode='a', newline='') as file:
+                    #     writer = csv.writer(file)
+                    #     writer.writerow([elapsed_time_choice])
                 elif algorithm == "ab":
                     best_move, _ = maximize_ab(old_grid)
                     # for timing decision making
@@ -134,9 +137,13 @@ def run_game(game_class=Game2048, title='2048!', data_dir='save', algorithm="min
 
                     with open(csv_file, mode='a', newline='') as file:
                         writer = csv.writer(file)
-                        writer.writerow([run_count, total_moves, final_score, highest_tile, round(duration, 2)])
-
-                    print(f"Game Over! Run: {run_count}, Total Moves: {total_moves}, Final Score: {final_score}, Highest Tile: {highest_tile}, Duration: {round(duration, 2)}")
+                        
+                        if total_moves > 5:
+                            decision_time = round(duration/total_moves, 2)
+                        else:
+                            decision_time = 0
+                        writer.writerow([run_count, total_moves, final_score, highest_tile, round(duration, 2), decision_time])
+                    print(f"Game Over! Run: {run_count}, Total Moves: {total_moves}, Final Score: {final_score}, Highest Tile: {highest_tile}, Duration: {round(duration, 2)}, Move/(s): {decision_time}")
 
                     run_count += 1
                     manager = reset_game()  # reset game
@@ -159,9 +166,13 @@ def run_game(game_class=Game2048, title='2048!', data_dir='save', algorithm="min
 
                     with open(csv_file, mode='a', newline='') as file:
                         writer = csv.writer(file)
-                        writer.writerow([run_count, total_moves, final_score, highest_tile, round(duration, 2), "Win!!!!!!!!"])
+                        if total_moves > 5:
+                            decision_time = round(duration/total_moves, 2)
+                        else:
+                            decision_time = 0
+                        writer.writerow([run_count, total_moves, final_score, highest_tile, round(duration, 2), decision_time, "Win!!!!!!!!"])
 
-                    print(f"Game Won! Run: {run_count}, Total Moves: {total_moves}, Final Score: {final_score}, Highest Tile: {highest_tile}, Duration: {round(duration, 2)}")
+                    print(f"Game Won! Run: {run_count}, Total Moves: {total_moves}, Final Score: {final_score}, Highest Tile: {highest_tile}, Duration: {round(duration, 2)}, Move/(s): {decision_time}")
                     
                     win_logged = True
 
@@ -191,5 +202,6 @@ if __name__ == "__main__":
     except IndexError:
         print("""Invalid option, try again with these options:
         [-m] to play with Minimax
+        [-ab] to play Alpha-Beta MiniMax
         [-mc] to play with Monte Carlo Tree Search""")
         sys.exit(1)

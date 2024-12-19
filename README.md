@@ -25,7 +25,7 @@ python AI_game.py -mc
 ```
 With this the GUI will pop up, and AI will start playing the game. It will restart when it loses and continue playing nonstop until it wins the game. 
 
-To explore different depth levels for MiniMax, that value can be modified from AI_Minimax and AI_AlphaBeta files.
+The default is depth level is 4. To explore different depth levels for MiniMax, that value should be modified from AI_Minimax and AI_AlphaBeta files. 
 
 
 ## Code Base Description
@@ -36,7 +36,8 @@ To explore different depth levels for MiniMax, that value can be modified from A
 | AI_Move | Basic tile move/merge logic based on 2048 rules. |
 | AI_Minimax | Minimax algorithm for 2048 tree. Max is the AI playing the game, and Min is the computer which generates new 2 or 4 tile randomly. |
 | AI_Heuristics | Heuristics function to rank/compare possible branch grids. This will be used to collect the best possible move in AI_Minimax. |
-| AI_AlphaBeta | Minimax with Alpha Beta pruning. |
+| AI_AlphaBeta | Alpha-Beta MiniMax. |
+| AI_Heuristics_AlphaBeta | Heuristics for the Alpha-Beta MiniMax. |
 | AI_MonteCarloTreeSearch | MCTS algorithm for 2048 tree. |
 
 
